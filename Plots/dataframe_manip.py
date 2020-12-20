@@ -5,6 +5,7 @@
 
 import pandas as pd
 
+df_efficiency = pd.read_csv('../Datasets/aid_efficiency1.csv')
 df_country = pd.read_csv('../Datasets/country_est.csv')
 df_global = pd.read_csv('../Datasets/reg_glob_est.csv')
 df_totalpop = pd.read_excel('../Datasets/totalpopulation.xls',sheet_name='ESTIMATES',
@@ -15,6 +16,7 @@ df_aid = pd.read_csv('../Datasets/netdevelopment.csv',skiprows=range(0,4))
 df_aid.drop(['Indicator Name','Indicator Code'], axis='columns', inplace=True)
 df_aid = pd.melt(df_aid,id_vars=['Country Name','Country Code'],var_name="Year",value_name="Aid")
 df_aid = df_aid[df_aid.Year != '2020']
+
 
 #======= Altering the df_country dataframe ====================================
 df_country = df_country[df_country.Uncertainty != 'Lower']
@@ -41,7 +43,6 @@ df_totalpop = df_totalpop[df_totalpop.Type != 'SDG region']
 df_totalpop.drop(['Type'], axis='columns', inplace=True)
 df_totalpop = df_totalpop.rename(columns={'Region, subregion, country or area *': 'CountryName'})
 df_totalpop = pd.melt(df_totalpop,id_vars=['CountryName'],var_name="Year",value_name="Population")
-df_totalpop['Population'] *= 1000
 #==============================================================================
 
 #======= Merged dataframe; cases per capita ===================================
@@ -54,8 +55,17 @@ merged_df1 = pd.merge(merged_df, df_aid,  how='left', left_on=['ISOCode','Year']
 merged_df1.drop(['Country Name','Country Code'], axis='columns', inplace=True)
 merged_df1['AidC'] = merged_df1['Aid']/merged_df1['Population']
 #==============================================================================
-
 df_country1 = df_country1.set_index(['CountryName'])
 df_country1.drop(['ISOCode'], axis='columns', inplace=True)
 df_country1 = df_country1.T
 df_country1.iloc[0] = 0
+
+#======= Aid efficiency dataframe =============================================
+df_efficiency.dropna
+df_efficiency.iloc[0] = 0
+df_efficiency = df_efficiency.set_index(['Year'])
+print(df_efficiency)
+df_efficiency = pd.melt(df_efficiency,id_vars=['CountryName'],var_name="Year",value_name="ReductionRate")
+
+#==============================================================================
+
