@@ -14,101 +14,70 @@ import plotly.offline as offline
 from plotly.graph_objs import *
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import pycountry
+import dataframe_manip
 
 #Unclear if this enhances the end result at all:
 init_notebook_mode(connected=True)
 
 app = dash.Dash()
 
-
-df_country = pd.read_csv('../Datasets/country_est.csv')
-df_global = pd.read_csv('../Datasets/reg_glob_est.csv')
-df_totalpop = pd.read_excel('../Datasets/totalpopulation.xls',sheet_name='ESTIMATES',
-                            skiprows=range(0,16))
-df_aid = pd.read_csv('../Datasets/netdevelopment.csv',skiprows=range(0,4))
-
-#======= Altering the df_aid dataframe ========================================
-df_aid.drop(['Indicator Name','Indicator Code'], axis='columns', inplace=True)
-df_aid = pd.melt(df_aid,id_vars=['Country Name','Country Code'],var_name="Year",value_name="Aid")
-df_aid = df_aid[df_aid.Year != '2020']
-#==============================================================================
-
-
-#======= Altering the df_country dataframe ====================================
-df_country = df_country[df_country.Uncertainty != 'Lower']
-df_country = df_country[df_country.Uncertainty != 'Upper']
-df_country.drop(['Uncertainty'], axis='columns', inplace=True)
-df_country.dropna
-df_country = df_country.rename(columns={'ISO.Code': 'ISOCode', 'Country.Name': 'CountryName'})
-df_country.drop(df_country.tail(1).index,inplace=True)
-df_country.drop(['1955','1956','1957','1958','1959'], axis='columns', inplace=True)
-df_country1 = df_country.copy(deep=False)
-df_country = pd.melt(df_country,id_vars=['ISOCode','CountryName'], var_name="Year", value_name="Deaths")
-#==============================================================================
-
-#======= Altering the df_country dataframe ====================================
-df_totalpop.drop(['Index','Variant','Notes','Country code','Parent code','1950','1951','1952','1953','1954','2020'], axis='columns', inplace=True)
-df_totalpop = df_totalpop[df_totalpop.Type != 'World']
-df_totalpop = df_totalpop[df_totalpop.Type != 'Region']
-df_totalpop = df_totalpop[df_totalpop.Type != 'Label/Separator']
-df_totalpop = df_totalpop[df_totalpop.Type != 'Subregion']
-df_totalpop = df_totalpop[df_totalpop.Type != 'Income Group']
-df_totalpop = df_totalpop[df_totalpop.Type != 'Development Group']
-df_totalpop = df_totalpop[df_totalpop.Type != 'Special other']
-df_totalpop = df_totalpop[df_totalpop.Type != 'SDG region']
-df_totalpop.drop(['Type'], axis='columns', inplace=True)
-df_totalpop = df_totalpop.rename(columns={'Region, subregion, country or area *': 'CountryName'})
-df_totalpop = pd.melt(df_totalpop,id_vars=['CountryName'],var_name="Year",value_name="Population")
-#==============================================================================
-
-#======= Merged dataframe; cases per capita ===================================
-merged_df = pd.merge(df_country, df_totalpop,  how='left', left_on=['CountryName','Year'], right_on = ['CountryName','Year'])
-merged_df['Deaths'] = merged_df['Deaths'].astype(float)
-merged_df['Population'] = merged_df['Population'].astype(float)
-merged_df['DeathsC'] = merged_df['Deaths']/merged_df['Population']
-
-merged_df1 = pd.merge(merged_df, df_aid,  how='left', left_on=['ISOCode','Year'], right_on = ['Country Code','Year'])
-merged_df1.drop(['Country Name','Country Code'], axis='columns', inplace=True)
-merged_df1['AidC'] = merged_df1['Aid']/merged_df1['Population']
-#==============================================================================
-
-merged_df1.to_csv('file_name.csv')
-
 #======= Chloropleth maps ======================================================
-fig = px.choropleth(data_frame = merged_df1,
+fig = px.choropleth(data_frame = dataframe_manip.merged_df1,
                      locations= "ISOCode",
                      color= "DeathsC",
                      hover_name= "CountryName",
                      color_continuous_scale= 'RdYlGn_r',
-                     range_color =(0,20),
+                     range_color =(0,11),
                      animation_frame= "Year")
-fig2 = px.choropleth(data_frame = merged_df1,
+fig.update_layout(
+    autosize=False,
+    width=500,
+    height=500,
+    margin=dict(
+        l=50,
+        r=50,
+        b=100,
+        t=100,
+        pad=4
+    ),
+    paper_bgcolor="LightSteelBlue",
+)
+
+fig2 = px.choropleth(data_frame = dataframe_manip.merged_df1,
                      locations= "ISOCode",
                      color= "AidC",
                      hover_name= "CountryName",
-                     color_continuous_scale= 'RdYlGn',
-                     animation_frame= "Year")
+                     color_continuous_scale= 'RdYlGn')
+fig2.update_layout(
+    autosize=False,
+    width=500,
+    height=500,
+    margin=dict(
+        l=50,
+        r=50,
+        b=100,
+        t=100,
+        pad=4
+    ),
+    paper_bgcolor="LightSteelBlue",
+)
 #==============================================================================
 
-#=======Interactive line chart ================================================
-df_country1 = df_country1.set_index(['CountryName'])
-df_country1.drop(['ISOCode'], axis='columns', inplace=True)
-df_country1 = df_country1.T
-df_country1.iloc[0] = 0
+#=======First line chart: one country, two lines================================
 fig1 = go.Figure()
-fig1.add_trace(go.Scatter(x=df_country1.index,
-                         y=df_country1[df_country1.columns[0]],
+fig1.add_trace(go.Scatter(x=dataframe_manip.df_country1.index,
+                         y=dataframe_manip.df_country1[dataframe_manip.df_country1.columns[0]],
                          visible=True)
              )
 updatemenu = []
 buttons = []
 # button with one option for each dataframe
-for col in df_country1.columns:
+for col in dataframe_manip.df_country1.columns:
     buttons.append(dict(method='restyle',
                         label=col,
                         visible=True,
-                        args=[{'y':[df_country1[col]],
-                               'x':[df_country1.index],
+                        args=[{'y':[dataframe_manip.df_country1[col]],
+                               'x':[dataframe_manip.df_country1.index],
                                'type':'scatter'}, [0]],
                         )
                   )
@@ -126,6 +95,9 @@ fig1.update_layout(showlegend=False, updatemenus=updatemenu)
 fig1.show()
 #==============================================================================
 
+#=======Second line chart: multi-country chart ================================
+
+
 #====== Layout for dash =======================================================
 app.layout = html.Div(children=[
     html.H1(children='Python Dash',
@@ -134,23 +106,26 @@ app.layout = html.Div(children=[
                 'color': '#ef3e18'
             }
             ),
-    html.Div('Web dashboard for Data Visualization using Python', style={'textAlign': 'center'}),
     html.Div('Welcome to the Group 5 dashboard! In this project we investigated what kind of correlation existed between development aid distributed by the World Bank and mortality rates for children between the ages of 1 and 4. This was accomplished through the use of choropleth maps, first to indicate yearly child mortality rates, then using line maps to chart the decline of child deaths over time.'),
     html.Div('Class: ITSC 3155-Y04', style={'textAlign': 'center'}),
+    html.Div(''),    
     html.Div('Group members: Coleman Mack, Venkat Madduri, Michael Nakhle, Jamie Stephens'),
     html.Hr(style={'color': '#7FDBFF'}),
     html.H3('Child Mortality Map', style={'color': '#df1e56'}),
     html.Div('This chloropleth map shows national mortality rates over time.'),
-
     dcc.Graph(figure=fig),
-    html.Div('To do: combine both chloropleths into 1, with a single synchronized slider.'),
     dcc.Graph(figure=fig2),
     html.H3('Line Graph', style={'color': '#df1e56'}),
     html.Div('Same data, with a dropdown. Select one country at a time.'),
     dcc.Graph(figure=fig1),
     html.H3('Line Graph, II', style={'color': '#df1e56'}),
     html.Div('Select multiple countries for a line graph in this space.'),
-    html.H3('Sources', style={'color': '#df1e56'}),
+    html.H3('Notes', style={'color': '#df1e56'}),
+    html.Div('Why do some countries report negative aid?', style={'color': '#df1e56'}),
+    html.Div(html.P(['Aid and aid per capita data show the net value of official development assistance (ODA). Thus, if countries pay back more than they receive, they can show negative values of net aid. Please note that net aid does not include aid provided to other countries. For example, donor countries such as United States and Canada show ".." for aid per capita rather than negative values because they do not receive official aid. Donor aid provided is tracked separately and published in the World Development Indicators (WDI) online tables and database.', html.Br(), 
+                     'Source: https://datahelpdesk.worldbank.org'],style={'textAlign': 'left','marginLeft': 100, 'marginRight': 300,'backgroundColor':'LightGrey'})),
+    
+    html.H3('Data Sources', style={'color': '#df1e56'}),
     html.Div(''),
     html.A("UNICEF: Number of deaths among children aged 1-4", href='https://data.unicef.org/wp-content/uploads/2020/09/Child-deaths-age-1-to-4_2020.xlsx', target="_blank"),
     html.Br(),
