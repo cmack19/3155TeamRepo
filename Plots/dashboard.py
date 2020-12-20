@@ -72,12 +72,15 @@ merged_df1.drop(['Country Name','Country Code'], axis='columns', inplace=True)
 merged_df1['AidC'] = merged_df1['Aid']/merged_df1['Population']
 #==============================================================================
 
+merged_df1.to_csv('file_name.csv')
+
 #======= Chloropleth maps ======================================================
 fig = px.choropleth(data_frame = merged_df1,
                      locations= "ISOCode",
                      color= "DeathsC",
                      hover_name= "CountryName",
                      color_continuous_scale= 'RdYlGn_r',
+                     range_color =(0,20),
                      animation_frame= "Year")
 fig2 = px.choropleth(data_frame = merged_df1,
                      locations= "ISOCode",
@@ -132,6 +135,9 @@ app.layout = html.Div(children=[
             }
             ),
     html.Div('Web dashboard for Data Visualization using Python', style={'textAlign': 'center'}),
+    html.Div('Welcome to the Group 5 dashboard! In this project we investigated what kind of correlation existed between development aid distributed by the World Bank and mortality rates for children between the ages of 1 and 4. This was accomplished through the use of choropleth maps, first to indicate yearly child mortality rates, then using line maps to chart the decline of child deaths over time.'),
+    html.Div('Class: ITSC 3155-Y04', style={'textAlign': 'center'}),
+    html.Div('Group members: Coleman Mack, Venkat Madduri, Michael Nakhle, Jamie Stephens'),
     html.Hr(style={'color': '#7FDBFF'}),
     html.H3('Child Mortality Map', style={'color': '#df1e56'}),
     html.Div('This chloropleth map shows national mortality rates over time.'),
