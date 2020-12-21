@@ -126,7 +126,7 @@ def update_line_chart(countries):
 
 #====== Layout for dash =======================================================
 app.layout = html.Div(children=[
-    html.H1(children='Python Dash',
+    html.H1(children='Child Mortality Dashboard',
             style={
                 'textAlign': 'center',
                 'color': '#ef3e18'}),
