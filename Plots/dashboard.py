@@ -140,10 +140,10 @@ app.layout = html.Div(children=[
     dcc.Graph(figure=fig9),
     dcc.Graph(figure=fig2),
     html.H3('Line Graph', style={'color': '#df1e56'}),
-    html.Div('This line graph shows two traces, one for aid per 1000 people and one for child deaths per 1000 people. Country data can be selected one at a time using the dropdown.'),
+    html.Div('This line graph shows two traces, one for aid per capita and one for child deaths per capita. Country data can be selected one at a time using the dropdown.'),
     dcc.Graph(figure=fig1),
     html.H3('Line Graph, II: Multi-Country Comparison', style={'color': '#df1e56'}),
-    html.Div('Select multiple countries for a line graph in this space. Line indicates the reduction in child deaths per 1000 people, divided by the aid per 1000 people spent in the previous year, i.e., a rough indication of how efficiently aid was spent in individual countries. A calculation close to 0 implies that the child deaths did not meaningfully decrease from the previous year, whereas a negative value implies that child deaths were more significantly reduced. In many nations there appears to be a decreasing efficiency rate over time, but that can more likely be attributed to preventable child deaths (malaria, war, malnutrition) decreasing over time, while other child deaths (cancer, congenital diseases, etc) are still inevitable for now.'),
+    html.Div('Select multiple countries for a line graph in this space. Line indicates the reduction in child deaths per capita, divided by the aid per capita spent in the previous year, i.e., a rough indication of how efficiently aid was spent in individual countries. A calculation close to 0 implies that the child deaths did not meaningfully decrease from the previous year, whereas a negative value implies that child deaths were more significantly reduced. In many nations there appears to be a decreasing efficiency rate over time, but that can more likely be attributed to preventable child deaths (malaria, war, malnutrition) decreasing over time, while other child deaths (cancer, congenital diseases, etc) are still inevitable for now.'),
     html.Div([
         dcc.Dropdown(
             id="droplist",
