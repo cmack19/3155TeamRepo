@@ -64,26 +64,30 @@ fig2.update_layout(
     ),
     paper_bgcolor="LightSteelBlue",
 )
-
-#fig3 = go.choropleth()
-
-
 #==============================================================================
 
 #=======First line chart: one country, two lines================================
+df_flcd = pd.read_csv('../Datasets/firstlinechartd.csv', header=0, delim_whitespace=True)
+df_flcd.iloc[0] = 0
+df_flcd = df_flcd.set_index(['Year'])
+
+df_flca = pd.read_csv('../Datasets/firstlinecharta.csv', header=0, delim_whitespace=True)
+df_flca.iloc[0] = 0
+df_flca = df_flca.set_index(['Year'])
+
 fig1 = go.Figure()
-fig1.add_trace(go.Scatter(x=dataframe_manip.df_country1.index,
-                         y=dataframe_manip.df_country1[dataframe_manip.df_country1.columns[0]],
+fig1.add_trace(go.Scatter(x=df_flcd.index,
+                         y=df_flcd[df_flcd.columns[0]],
                          visible=True))
 updatemenu = []
 buttons = []
 # button with one option for each dataframe
-for col in dataframe_manip.df_country1.columns:
+for col in df_flcd.columns:
     buttons.append(dict(method='restyle',
                         label=col,
                         visible=True,
-                        args=[{'y':[dataframe_manip.df_country1[col]],
-                               'x':[dataframe_manip.df_country1.index],
+                        args=[{'y':[df_flcd[col]],
+                               'x':[df_flcd.index],
                                'type':'scatter'}, [0]],
                         )
                   )
@@ -100,9 +104,8 @@ fig1.update_xaxes(title_text='Year')
 fig1.update_yaxes(title_text='Aid/Deaths Per 1000 People')
 
 # add dropdown menus to the figure
-fig1.update_layout(showlegend=True, updatemenus=updatemenu)
+fig1.update_layout(showlegend=False, updatemenus=updatemenu)
 fig1.show()
-
 
 #==============================================================================
 
@@ -137,10 +140,10 @@ app.layout = html.Div(children=[
     dcc.Graph(figure=fig9),
     dcc.Graph(figure=fig2),
     html.H3('Line Graph', style={'color': '#df1e56'}),
-    html.Div('Line graph '),
+    html.Div('This line graph shows two traces, one for aid per 1000 people and one for child deaths per 1000 people. Country data can be selected one at a time using the dropdown.'),
     dcc.Graph(figure=fig1),
     html.H3('Line Graph, II: Multi-Country Comparison', style={'color': '#df1e56'}),
-    html.Div('Select multiple countries for a line graph in this space. Line indicates the reduction in child deaths per 1000 people, divided by the aid per 1000 people spent in the previous year, i.e., a rough indication of how efficiently aid was spent in individual countries. In many nations there appears to be a decreasing efficiency rate over time, but that can more likely be attributed to preventable child deaths (malaria, war, malnutrition) decreasing over time, while failing to prevent other child deaths (cancer, congenital diseases, etc).'),
+    html.Div('Select multiple countries for a line graph in this space. Line indicates the reduction in child deaths per 1000 people, divided by the aid per 1000 people spent in the previous year, i.e., a rough indication of how efficiently aid was spent in individual countries. A calculation close to 0 implies that the child deaths did not meaningfully decrease from the previous year, whereas a negative value implies that child deaths were more significantly reduced. In many nations there appears to be a decreasing efficiency rate over time, but that can more likely be attributed to preventable child deaths (malaria, war, malnutrition) decreasing over time, while other child deaths (cancer, congenital diseases, etc) are still inevitable for now.'),
     html.Div([
         dcc.Dropdown(
             id="droplist",

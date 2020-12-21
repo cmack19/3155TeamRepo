@@ -65,11 +65,19 @@ df_country1 = df_country1.set_index(['CountryName'])
 df_country1.drop(['ISOCode'], axis='columns', inplace=True)
 df_country1 = df_country1.T
 df_country1.iloc[0] = 0
+
+#CountryName  Afghanistan  Albania  Algeria  ...   Zambia  Zimbabwe  NaN
+#1960                 0.0      0.0      0.0  ...      0.0       0.0  0.0
+#1961                 NaN      NaN  49979.0  ...  11558.0    9534.0  NaN
+#1962                 NaN      NaN  51524.0  ...  11734.0    9517.0  NaN
+#1963                 NaN      NaN  53133.0  ...  11928.0    9470.0  NaN
+
+#==============================================================================
+
 #======= Aid efficiency dataframe =============================================
 df_efficiency3 = df_efficiency3.set_index(['Year'])
 df_efficiency.iloc[0] = 0
 unique_countries = list(df_efficiency3.columns.values) 
-
 df_efficiency2.iloc[0] = 0
 #==============================================================================
 
