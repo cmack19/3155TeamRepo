@@ -13,6 +13,7 @@ import plotly.express as px
 import plotly.offline as offline
 from plotly.graph_objs import *
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+from dash.dependencies import Input, Output
 import pycountry
 import dataframe_manip
 
@@ -22,14 +23,14 @@ init_notebook_mode(connected=True)
 app = dash.Dash(__name__)
 
 #======= Chloropleth maps ======================================================
-fig = px.choropleth(data_frame = dataframe_manip.merged_df1,
+fig9 = px.choropleth(data_frame = dataframe_manip.merged_df1,
                      locations= "ISOCode",
                      color= "DeathsC",
                      hover_name= "CountryName",
                      color_continuous_scale= 'RdYlGn_r',
                      range_color =(0,11),
                      animation_frame= "Year")
-fig.update_layout(
+fig9.update_layout(
     autosize=False,
     width=500,
     height=500,
@@ -49,7 +50,7 @@ fig2 = px.choropleth(data_frame = dataframe_manip.merged_df1,
                      hover_name= "CountryName",
                      range_color=(-150,12500),
                      color_continuous_scale= 'RdYlGn',
-                     animation_frame=animation_frame)
+                     animation_frame="Year")
 fig2.update_layout(
     autosize=False,
     width=500,
@@ -64,7 +65,7 @@ fig2.update_layout(
     paper_bgcolor="LightSteelBlue",
 )
 
-fig3 = go.choropleth()
+#fig3 = go.choropleth()
 
 
 #==============================================================================
@@ -95,41 +96,30 @@ updatemenu[0]['buttons'] = buttons
 updatemenu[0]['direction'] = 'down'
 updatemenu[0]['showactive'] = True
 
+fig1.update_xaxes(title_text='Year')
+fig1.update_yaxes(title_text='Aid/Deaths Per 1000 People')
+
 # add dropdown menus to the figure
-fig1.update_layout(showlegend=False, updatemenus=updatemenu)
+fig1.update_layout(showlegend=True, updatemenus=updatemenu)
 fig1.show()
+
+
 #==============================================================================
 
-
 #=======Second line chart: multi-country chart ================================
-fig5 = go.Figure()
-fig5.add_trace(go.Scatter(x=dataframe_manip.df_efficiency.index,
-                         y=dataframe_manip.df_efficiency[dataframe_manip.df_efficiency.columns[0]],
-                         visible=True))
-updatemenu = []
-buttons = []
-# button with one option for each dataframe
-for col in dataframe_manip.df_country1.columns:
-    buttons.append(dict(method='restyle',
-                        label=col,
-                        visible=True,
-                        args=[{'y':[dataframe_manip.df_country1[col]],
-                               'x':[dataframe_manip.df_country1.index],
-                               'type':'scatter'}, [0]],
-                        )
-                  )
-# some adjustments to the updatemenus
-updatemenu = []
-your_menu = dict()
-updatemenu.append(your_menu)
+df = pd.read_csv('../Datasets/aid_efficiency23.csv')
+all_countries = df.country.unique()
 
-updatemenu[0]['buttons'] = buttons
-updatemenu[0]['direction'] = 'down'
-updatemenu[0]['showactive'] = True
+@app.callback(
+    Output("line-chart", "figure"), 
+    [Input("droplist", "value")])
+def update_line_chart(countries):
+    mask = df.country.isin(countries)
+    fig = px.line(df[mask], 
+        x="year", y="reduction", color='country')
+    return fig
 
-# add dropdown menus to the figure
-fig5.update_layout(showlegend=False, updatemenus=updatemenu)
-fig5.show()
+#==============================================================================
 
 #====== Layout for dash =======================================================
 app.layout = html.Div(children=[
@@ -144,21 +134,29 @@ app.layout = html.Div(children=[
     html.Hr(style={'color': '#7FDBFF'}),
     html.H3('Choropleth Maps', style={'color': '#df1e56'}),
     html.Div('The first choropleth map displays child deaths per 1,000 people. The second shows net aid per 1,000 people, in USD adjusted for inflation.'),
-    dcc.Graph(figure=fig),
+    dcc.Graph(figure=fig9),
     dcc.Graph(figure=fig2),
     html.H3('Line Graph', style={'color': '#df1e56'}),
     html.Div('Line graph '),
     dcc.Graph(figure=fig1),
     html.H3('Line Graph, II: Multi-Country Comparison', style={'color': '#df1e56'}),
-    html.Div('Select multiple countries for a line graph in this space. Line indicates a simple measure of lives saved per aid capita spent in the previous year, i.e., a rough indication of how efficiently aid was spent in individual countries.'),
-    dcc.Graph(figure=fig5),
+    html.Div('Select multiple countries for a line graph in this space. Line indicates the reduction in child deaths per 1000 people, divided by the aid per 1000 people spent in the previous year, i.e., a rough indication of how efficiently aid was spent in individual countries. In many nations there appears to be a decreasing efficiency rate over time, but that can more likely be attributed to preventable child deaths (malaria, war, malnutrition) decreasing over time, while failing to prevent other child deaths (cancer, congenital diseases, etc).'),
+    html.Div([
+        dcc.Dropdown(
+            id="droplist",
+            multi=True,
+            options=[{"label": x, "value": x} 
+                     for x in all_countries]
+        ),
+        dcc.Graph(id="line-chart"),
+    ]),
+        
     html.H3('Notes', style={'color': '#df1e56'}),
     html.Div('Why do some countries report negative aid?', style={'color': '#df1e56'}),
     html.Div(html.P(['"Aid and aid per capita data show the net value of official development assistance (ODA). Thus, if countries pay back more than they receive, they can show negative values of net aid. Please note that net aid does not include aid provided to other countries. For example, donor countries such as United States and Canada show ".." for aid per capita rather than negative values because they do not receive official aid. Donor aid provided is tracked separately and published in the World Development Indicators (WDI) online tables and database."', html.Br(), 
                      'Source: https://datahelpdesk.worldbank.org'],style={'textAlign': 'left','marginLeft': 100, 'marginRight': 300})),
     html.Div('Why are some countries excluded from the last chart?', style={'color': '#df1e56'}),
-    html.Div(html.P(['In any given year, only countries for which child mortality and net funding data existed show up on the chart.', html.Br(), 
-                     'Source: https://datahelpdesk.worldbank.org'],style={'textAlign': 'left','marginLeft': 100, 'marginRight': 300})),
+    html.Div(html.P(['In any given year, only countries for which child mortality and net funding data existed show up on the chart.'],style={'textAlign': 'left','marginLeft': 100, 'marginRight': 300})),
     
     html.H3('Data Sources', style={'color': '#df1e56'}),
     html.Div(''),

@@ -6,6 +6,12 @@
 import pandas as pd
 
 df_efficiency = pd.read_csv('../Datasets/aid_efficiency1.csv')
+df_efficiency2 = pd.read_csv('../Datasets/aid_efficiency2.csv')
+df_efficiency3 = pd.read_csv('../Datasets/aid_efficiency3.csv')
+df_efficiency23 = pd.read_csv('../Datasets/aid_efficiency23.csv')
+
+
+
 df_country = pd.read_csv('../Datasets/country_est.csv')
 df_global = pd.read_csv('../Datasets/reg_glob_est.csv')
 df_totalpop = pd.read_excel('../Datasets/totalpopulation.xls',sheet_name='ESTIMATES',
@@ -59,13 +65,11 @@ df_country1 = df_country1.set_index(['CountryName'])
 df_country1.drop(['ISOCode'], axis='columns', inplace=True)
 df_country1 = df_country1.T
 df_country1.iloc[0] = 0
-
 #======= Aid efficiency dataframe =============================================
-df_efficiency.dropna
+df_efficiency3 = df_efficiency3.set_index(['Year'])
 df_efficiency.iloc[0] = 0
-df_efficiency = df_efficiency.set_index(['Year'])
-print(df_efficiency)
-df_efficiency = pd.melt(df_efficiency,id_vars=['CountryName'],var_name="Year",value_name="ReductionRate")
+unique_countries = list(df_efficiency3.columns.values) 
 
+df_efficiency2.iloc[0] = 0
 #==============================================================================
 
