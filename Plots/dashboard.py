@@ -130,7 +130,7 @@ app.layout = html.Div(children=[
             style={
                 'textAlign': 'center',
                 'color': '#ef3e18'}),
-    html.Div('Welcome to the Group 5 dashboard! In this project we investigated what kind of correlation existed between development aid distributed by the World Bank and mortality rates for children between the ages of 1 and 4. This was accomplished through the use of choropleth maps, first to indicate yearly child mortality rates, then using line maps to chart the decline of child deaths over time.'),
+    html.Div('Welcome to the Group 5 dashboard! In this project we investigated what kind of correlation existed between development aid distributed by the World Bank and mortality rates for children between the ages of 1 and 4, collected by UNICEF. This was accomplished through the use of choropleth maps, first to indicate yearly child mortality rates, then using line maps to chart the decline of child deaths over time.'),
     html.Div('Class: ITSC 3155-Y04', style={'textAlign': 'center'}),
     html.Div(''),    
     html.Div('Group members: Coleman Mack, Venkat Madduri, Michael Nakhle, Jamie Stephens', style={'textAlign': 'center'}),
